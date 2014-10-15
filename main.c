@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 #include <sys/resource.h>
 #include <sys/wait.h>
 #include <sys/types.h>
@@ -12,28 +13,28 @@
 #include <signal.h>
 
 
-char** tokenify(const char *s) {
+char** tokenify(const char *s,const char token) {
 	//duplicate string for parsing
     char *str = strdup(s);
-    int numSemiColon = 0;
+    int numToks = 0;
 	
 	//count the number of spaces in the line
     for (int i=0;i<strlen(str);i++) {
-        if(str[i] == ';') {
-            numSemiColon++;
+        if(str[i] == token) {
+            numToks++;
         }
     }
 	
 	//make space for the returned array of tokens
-    char **ret = malloc((sizeof (char*))* (numSemiColon+2));
-    char *tok = strtok(str,";");
+    char **ret = malloc((sizeof (char*))* (numToks+2));
+    char *tok = strtok(str,&token);
 	
 	//loop through tokens and place each one in
 	//the array to be returned
     int index = 0;
     while (tok != NULL) {
         ret[index] = strdup(tok);
-        tok = strtok(NULL,";");
+        tok = strtok(NULL,&token);
         index++;
     }
 
@@ -44,9 +45,26 @@ char** tokenify(const char *s) {
     return ret;
 }
 
+//this function handles each token
 void parseToken(char *token) {
-	//this function handles each token
-	printf("%s\n",token);
+	//Fork current process
+	pid_t pid = fork();
+
+	//Check for errors with the fork system call
+	if(errno!=0) {
+		printf("shell error: %s\n", strerror(errno));
+		return;
+	}
+
+	char **arguments=NULL;
+	if(pid==0) {
+		arguments = tokenify(token,' ');
+		execv(arguments[0],arguments);
+
+	} else {
+		//Wait until child process completes 
+	}
+	free_tokens(arguments);
 }
 
 void free_tokens(char **tokens) {
@@ -67,6 +85,7 @@ int main(int argc, char **argv) {
 	size_t size = 0;
 	char *line = NULL;
 	
+	printf("proj02shell$ ");
 	while(getline(&line,&size,stdin) != -1) {
         for (int i=0;i<strlen(line);i++) {
             if (line[i] == '#') {
@@ -75,13 +94,14 @@ int main(int argc, char **argv) {
             }
 		}
 		
-        char **tokens = tokenify(line);
+        char **tokens = tokenify(line,';');
         char *head = *tokens;
 		for(int i = 0; tokens[i] != NULL; i++){
 			parseToken(tokens[i]);
         }
 		
 		free_tokens(tokens);
+		printf("proj02shell$ ");
 	}
 	
 	free(line);
