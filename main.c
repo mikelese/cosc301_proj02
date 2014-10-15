@@ -96,6 +96,7 @@ int main(int argc, char **argv) {
             }
             if(line[i]=='\n') {
             	line[i]='\0';
+            	break;
             }
 		}
 		
