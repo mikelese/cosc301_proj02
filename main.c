@@ -13,28 +13,20 @@
 #include <signal.h>
 
 
-char** tokenify(const char *s,const char token) {
+char** tokenify(const char *s,const char *token, int numToks) {
 	//duplicate string for parsing
     char *str = strdup(s);
-    int numToks = 0;
-	
-	//count the number of spaces in the line
-    for (int i=0;i<strlen(str);i++) {
-        if(str[i] == token) {
-            numToks++;
-        }
-    }
-	
+
 	//make space for the returned array of tokens
     char **ret = malloc((sizeof (char*))* (numToks+2));
-    char *tok = strtok(str,&token);
+    char *tok = strtok(str,token);
 	
 	//loop through tokens and place each one in
 	//the array to be returned
     int index = 0;
     while (tok != NULL) {
         ret[index] = strdup(tok);
-        tok = strtok(NULL,&token);
+        tok = strtok(NULL,token);
         index++;
     }
 
@@ -65,7 +57,15 @@ void parseToken(char *token) {
 	}
 	
 	if(pid==0) {
-		char **arguments = tokenify(token,' ');
+	    int numToks = 0;
+		//count the number of spaces in the line
+	    for (int i=0;i<strlen(token);i++) {
+	        if(isspace(token[i]) != 0) {
+	            numToks++;
+	        }
+	    }
+	
+		char **arguments = tokenify(token," \t\n",numToks);
 		if(execv(arguments[0],arguments)<0) {
 			printf("shell error (execv): %s\n", strerror(errno));
 			free_tokens(arguments);
@@ -88,16 +88,24 @@ int main(int argc, char **argv) {
 	size_t size = 0;
 	char *line = NULL;
 	
-	printf("proj02shell$ ");
+	printf("ca$hmoneyballer$: ");
 	while(getline(&line,&size,stdin) != -1) {
         for (int i=0;i<strlen(line);i++) {
-            if (line[i] == '#' || line[i]=='\n') {
+            if (line[i] == '#' /*|| line[i]=='\n'*/) {
                 line[i] = '\0';
 				break;
             }
 		}
-		
-        char **tokens = tokenify(line,';');
+	    int numToks = 0;
+	
+		//count the number of spaces in the line
+	    for (int i=0;i<strlen(line);i++) {
+	        if(line[i] == ';') {
+	            numToks++;
+	        }
+	    }
+	
+        char **tokens = tokenify(line,";",numToks);
         char *head = *tokens;
 		for(int i = 0; tokens[i] != NULL; i++){
 			parseToken(tokens[i]);
