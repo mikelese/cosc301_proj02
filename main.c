@@ -94,6 +94,9 @@ int main(int argc, char **argv) {
                 line[i] = '\0';
 				break;
             }
+            if(line[i]=='\n') {
+            	line[i]='\0';
+            }
 		}
 		
         char **tokens = tokenify(line,';');
