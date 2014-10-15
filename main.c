@@ -15,19 +15,19 @@
 char** tokenify(const char *s) {
 	//duplicate string for parsing
     char *str = strdup(s);
-    int numSpaces = 0;
+    int numSemiColon = 0;
 	
 	//count the number of spaces in the line
     for (int i=0;i<strlen(str);i++) {
-        if(isspace(str[i])) {
-            numSpaces++;
+        if(str[i] == ';') {
+            numSemiColon++;
         }
     }
 	
 	//make space for the returned array of tokens
-    char **ret = malloc((sizeof (char*))* (numSpaces+2));
+    char **ret = malloc((sizeof (char*))* (numSemiColon+2));
     char *tok = strtok(str,";");
-
+	
 	//loop through tokens and place each one in
 	//the array to be returned
     int index = 0;
@@ -36,6 +36,7 @@ char** tokenify(const char *s) {
         tok = strtok(NULL,";");
         index++;
     }
+
 	//null terminate the array, free the passed in str
 	//and return the array
     ret[index] = NULL;
@@ -45,6 +46,7 @@ char** tokenify(const char *s) {
 
 void parseToken(char *token) {
 	//this function handles each token
+	printf("%s\n",token);
 }
 
 void free_tokens(char **tokens) {
