@@ -33,7 +33,7 @@ char** tokenify(const char *s) {
     int index = 0;
     while (tok != NULL) {
         ret[index] = strdup(tok);
-        tok = strtok(NULL," \t\n");
+        tok = strtok(NULL,";");
         index++;
     }
 	//null terminate the array, free the passed in str
@@ -43,7 +43,7 @@ char** tokenify(const char *s) {
     return ret;
 }
 
-void parseToken(char *token, node **head) {
+void parseToken(char *token) {
 	//this function handles each token
 }
 
@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
         char **tokens = tokenify(line);
         char *head = *tokens;
 		for(int i = 0; tokens[i] != NULL; i++){
-			parseToken(tokens[i],&head);
+			parseToken(tokens[i]);
         }
 		
 		free_tokens(tokens);
