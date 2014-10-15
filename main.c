@@ -53,7 +53,7 @@ void free_tokens(char **tokens) {
         free(tokens[i]);
     }
 	// then free the array
-    free(tokens); 
+    free(tokens);
 }
 
 int main(int argc, char **argv) {
@@ -74,6 +74,7 @@ int main(int argc, char **argv) {
 		}
 		
         char **tokens = tokenify(line);
+        char *head = *tokens;
 		for(int i = 0; tokens[i] != NULL; i++){
 			parseToken(tokens[i],&head);
         }
