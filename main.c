@@ -72,7 +72,8 @@ void parseToken(char *token) {
 			exit(0);
 		}
 
-	} else {
+	} 
+	else {
 		wait(NULL);
 		printf("%s\n", "Parent process");
 	}
@@ -90,13 +91,9 @@ int main(int argc, char **argv) {
 	printf("proj02shell$ ");
 	while(getline(&line,&size,stdin) != -1) {
         for (int i=0;i<strlen(line);i++) {
-            if (line[i] == '#') {
+            if (line[i] == '#' || line[i]=='\n') {
                 line[i] = '\0';
 				break;
-            }
-            if(line[i]=='\n') {
-            	line[i]='\0';
-            	break;
             }
 		}
 		
