@@ -45,28 +45,6 @@ char** tokenify(const char *s,const char token) {
     return ret;
 }
 
-//this function handles each token
-void parseToken(char *token) {
-	//Fork current process
-	pid_t pid = fork();
-
-	//Check for errors with the fork system call
-	if(errno!=0) {
-		printf("shell error: %s\n", strerror(errno));
-		return;
-	}
-
-	char **arguments=NULL;
-	if(pid==0) {
-		arguments = tokenify(token,' ');
-		execv(arguments[0],arguments);
-
-	} else {
-		//Wait until child process completes 
-	}
-	free_tokens(arguments);
-}
-
 void free_tokens(char **tokens) {
 	// free each string
 	for(int i = 0; tokens[i] != NULL; i++){
@@ -74,6 +52,30 @@ void free_tokens(char **tokens) {
     }
 	// then free the array
     free(tokens);
+}
+
+//this function handles each token
+void parseToken(char *token) {
+	//Fork current process
+	pid_t pid = fork();
+	
+	if (pid<0) {
+		printf("shell error: %s (%s)\n", strerror(errno),token);
+		return;
+	}
+	
+	if(pid==0) {
+		char **arguments = tokenify(token,' ');
+		if(execv(arguments[0],arguments)<0) {
+			printf("shell error (execv): %s\n", strerror(errno));
+			free_tokens(arguments);
+			exit(0);
+		}
+
+	} else {
+		wait(NULL);
+		printf("%s\n", "Parent process");
+	}
 }
 
 int main(int argc, char **argv) {
