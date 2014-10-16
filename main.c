@@ -99,7 +99,7 @@ int parseTokenSeq(char *token) {
 	return 0;
 }
 
-int parseTokenPar(char *token) {
+int parseTokenPar(char *token, int *pids, int index) {
 
 	int numToks = 0;
 	//count the number of spaces in the line
@@ -129,10 +129,12 @@ int parseTokenPar(char *token) {
 
 	//Fork current process
 	pid_t pid = fork();
+	pids[index] = pid;
 	
 	if (pid<0) {
 		printf("shell error: %s (%s)\n", strerror(errno),token);
-		return 1;
+		free_tokens(arguments);
+		exit(0);
 	}
 	
 	if(pid==0) {
@@ -163,7 +165,7 @@ int main(int argc, char **argv) {
 	printf("ca$hmoneyballer$ (sequential): ");
 	while(getline(&line,&size,stdin) != -1) {
         for (int i=0;i<strlen(line);i++) {
-            if (line[i] == '#' /*|| line[i]=='\n'*/) {
+            if (line[i] == '#') {
                 line[i] = '\0';
 				break;
             }
@@ -178,21 +180,26 @@ int main(int argc, char **argv) {
 	    }
 	
         char **tokens = tokenify(line,";",numToks);
-        char *head = *tokens;
+        //char *head = *tokens;
         int tempMode = mode;
+		int *pids = malloc(sizeof(int)*numToks);
 		for(int i = 0; tokens[i] != NULL; i++){
 			if(tokens[i][0]=='\n') {
 				break;
 			}
-			if(mode==0) {
+			if(!mode) {
 				tempMode = parseTokenSeq(tokens[i]);
 			} 
 			else {
-				tempMode = parseTokenPar(tokens[i]);
+				tempMode = parseTokenPar(tokens[i], pids, i);
 			}
         }
 
         mode = tempMode;
+		
+		if(mode){
+			//need waitpid code here
+		}
 		
 		free_tokens(tokens);
 		if(mode==0) {
