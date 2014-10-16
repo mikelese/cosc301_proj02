@@ -69,12 +69,8 @@ int parseTokenSeq(char *token) {
 		if(arguments[1][0]=='p') {
 			return 1;
 		}
-		if(arguments[1][0]=='s') {
-			return 0;
-		}
 		else {
 			return 0;
-
 		}
 		free_tokens(arguments);
 
@@ -122,9 +118,6 @@ int parseTokenPar(char *token) {
 	}
 
 	if(strcmp(arguments[0],"mode")==0) {
-		if(arguments[1][0]=='p') {
-			return 1;
-		}
 		if(arguments[1][0]=='s') {
 			return 0;
 		}
@@ -156,7 +149,6 @@ int parseTokenPar(char *token) {
 
 	return 1;
 }
-
 
 int main(int argc, char **argv) {
 
