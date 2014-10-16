@@ -48,6 +48,23 @@ void free_tokens(char **tokens) {
 
 //this function handles each token
 void parseToken(char *token) {
+
+	int numToks = 0;
+	//count the number of spaces in the line
+    for (int i=0;i<strlen(token);i++) {
+        if(isspace(token[i]) != 0) {
+            numToks++;
+        }
+    }
+
+	char **arguments = tokenify(token," \t\n",numToks);
+
+	if(strcmp(arguments[0],"exit")==0) {
+		printf("Today was a good day...\n");
+		free_tokens(arguments);
+		exit(0);
+	}
+
 	//Fork current process
 	pid_t pid = fork();
 	
@@ -57,15 +74,6 @@ void parseToken(char *token) {
 	}
 	
 	if(pid==0) {
-	    int numToks = 0;
-		//count the number of spaces in the line
-	    for (int i=0;i<strlen(token);i++) {
-	        if(isspace(token[i]) != 0) {
-	            numToks++;
-	        }
-	    }
-	
-		char **arguments = tokenify(token," \t\n",numToks);
 		if(execv(arguments[0],arguments)<0) {
 			printf("shell error (execv): %s\n", strerror(errno));
 			free_tokens(arguments);
