@@ -55,13 +55,18 @@ int parseToken(char **arguments, int mode, int tempMode) {
 	}
 
 	if(strcasecmp(arguments[0],"mode")==0) {
-		if(arguments[1][0]=='p' && tempMode == 0) {
-			free_tokens(arguments);
-			return 1;
-		}
-		if(arguments[1][0]=='s' && tempMode == 1){
-			free_tokens(arguments);
-			return 0;
+		int i;
+		for(i=0;arguments[i]!=NULL;i++) ;
+
+		if(i>1) {
+			if(arguments[1][0]=='p' && tempMode == 0) {
+				free_tokens(arguments);
+				return 1;
+			}
+			if(arguments[1][0]=='s' && tempMode == 1){
+				free_tokens(arguments);
+				return 0;
+			}
 		}
 		free_tokens(arguments);
 		return tempMode;
