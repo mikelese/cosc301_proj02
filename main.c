@@ -47,22 +47,24 @@ void free_tokens(char **tokens) {
 }
 
 //this function handles each token
-int parseTokenSeq(char **arguments) {
+int parseToken(char **arguments, int mode, int tempMode) {
 
 	if(strcmp(arguments[0],"exit")==0) {
-		printf("Today was a good day...\n");
 		free_tokens(arguments);
 		return -1;
 	}
 
-	if(strcmp(arguments[0],"mode")==0) {
-		if(arguments[1][0]=='p') {
+	if(strcasecmp(arguments[0],"mode")==0) {
+		if(arguments[1][0]=='p' && tempMode == 0) {
+			free_tokens(arguments);
 			return 1;
 		}
-		else {
+		if(arguments[1][0]=='s' && tempMode == 1){
+			free_tokens(arguments);
 			return 0;
 		}
 		free_tokens(arguments);
+		return tempMode;
 
 	}	
 
@@ -71,7 +73,7 @@ int parseTokenSeq(char **arguments) {
 	
 	if (pid<0) {
 		printf("shell error: %s (%s)\n", strerror(errno),*arguments);
-		return 0;
+		return tempMode;
 	}
 	
 	if(pid==0) {
@@ -83,52 +85,13 @@ int parseTokenSeq(char **arguments) {
 
 	} 
 	else {
-		wait(NULL);
-		//printf("%s\n", "Parent process");
+		if(mode == 0){
+			wait(NULL);
+		}
 	}
-	return 0;
+	return tempMode;
 }
 
-int parseTokenPar(char **arguments) {
-
-	if(strcmp(arguments[0],"exit")==0) {
-		free_tokens(arguments);
-		return -1;
-	}
-
-	if(strcmp(arguments[0],"mode")==0) {
-		if(arguments[1][0]=='s') {
-			return 0;
-		}
-		else {
-			return 1;
-		}
-		free_tokens(arguments);
-	}	
-
-	//Fork current process
-	pid_t pid = fork();
-	
-	if (pid<0) {
-		printf("shell error: %s (%s)\n", strerror(errno),*arguments);
-		free_tokens(arguments);
-		exit(0);
-	}
-	
-	if(pid==0) {
-		if(execv(arguments[0],arguments)<0) {
-			printf("shell error (execv): %s\n", strerror(errno));
-			free_tokens(arguments);
-			exit(0);
-		}
-
-	} 
-	else {
-		//printf("%s\n", "Parent process");
-	}
-
-	return 1;
-}
 
 int main(int argc, char **argv) {
 
@@ -176,15 +139,13 @@ int main(int argc, char **argv) {
 
 			char **arguments = tokenify(token," \t\n",numToks);
 			
-			if(!mode) {
-				tempMode = parseTokenSeq(arguments);
-			} 
-			else {
-				tempMode = parseTokenPar(arguments);
-			}
+			tempMode = parseToken(arguments,mode,tempMode);
+
 			if(tempMode == -1){
 				didexit = 1;
+				tempMode = mode;
 			}
+			
         }
 
         
