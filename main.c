@@ -47,7 +47,7 @@ void free_tokens(char **tokens) {
 }
 
 //this function handles each token
-void parseToken(char *token) {
+int parseTokenSeq(char *token) {
 
 	int numToks = 0;
 	//count the number of spaces in the line
@@ -65,12 +65,30 @@ void parseToken(char *token) {
 		exit(0);
 	}
 
+	if(strcmp(arguments[0],"mode")==0) {
+		if(arguments[1][0]=='p') {
+			printf("Entering paralell mode.\n");
+			return 1;
+		}
+		if(arguments[1][0]=='s') {
+			printf("Already in sequential mode.\n");
+			return 0;
+		}
+		else {
+			printf("Not a valid mode.\n");
+			return 0;
+
+		}
+		free_tokens(arguments);
+
+	}	
+
 	//Fork current process
 	pid_t pid = fork();
 	
 	if (pid<0) {
 		printf("shell error: %s (%s)\n", strerror(errno),token);
-		return;
+		return 0;
 	}
 	
 	if(pid==0) {
@@ -85,7 +103,66 @@ void parseToken(char *token) {
 		wait(NULL);
 		printf("%s\n", "Parent process");
 	}
+	return 0;
 }
+
+int parseTokenPar(char *token) {
+
+	int numToks = 0;
+	//count the number of spaces in the line
+    for (int i=0;i<strlen(token);i++) {
+        if(isspace(token[i]) != 0) {
+            numToks++;
+        }
+    }
+
+	char **arguments = tokenify(token," \t\n",numToks);
+
+	if(strcmp(arguments[0],"exit")==0) {
+		printf("Today was a good day...\n");
+		free_tokens(arguments);
+		exit(0);
+	}
+
+	if(strcmp(arguments[0],"mode")==0) {
+		if(arguments[1][0]=='p') {
+			printf("Already in paralell mode.\n");
+			return 1;
+		}
+		if(arguments[1][0]=='s') {
+			printf("Entering sequential mode.\n");
+			return 0;
+		}
+		else {
+			printf("Not a valid mode.\n");
+		}
+		wait(NULL);
+		free_tokens(arguments);
+	}	
+
+	//Fork current process
+	pid_t pid = fork();
+	
+	if (pid<0) {
+		printf("shell error: %s (%s)\n", strerror(errno),token);
+		return 1;
+	}
+	
+	if(pid==0) {
+		if(execv(arguments[0],arguments)<0) {
+			printf("shell error (execv): %s\n", strerror(errno));
+			free_tokens(arguments);
+			exit(0);
+		}
+
+	} 
+	else {
+		printf("%s\n", "Parent process");
+	}
+
+	return 1;
+}
+
 
 int main(int argc, char **argv) {
 
@@ -95,8 +172,9 @@ int main(int argc, char **argv) {
 	
 	size_t size = 0;
 	char *line = NULL;
+	int mode = 0;
 	
-	printf("ca$hmoneyballer$: ");
+	printf("ca$hmoneyballer$ (sequential): ");
 	while(getline(&line,&size,stdin) != -1) {
         for (int i=0;i<strlen(line);i++) {
             if (line[i] == '#' /*|| line[i]=='\n'*/) {
@@ -116,11 +194,21 @@ int main(int argc, char **argv) {
         char **tokens = tokenify(line,";",numToks);
         char *head = *tokens;
 		for(int i = 0; tokens[i] != NULL; i++){
-			parseToken(tokens[i]);
+			if(mode==0) {
+				mode = parseTokenSeq(tokens[i]);
+			} 
+			else {
+				mode = parseTokenPar(tokens[i]);
+			}
         }
 		
 		free_tokens(tokens);
-		printf("proj02shell$ ");
+		if(mode==0) {
+			printf("ca$hmoneyballer$ (sequential): ");
+		}
+		else {
+			printf("ca$hmoneyballer$ (paralell): ");
+		}
 	}
 	
 	free(line);
