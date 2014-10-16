@@ -7,15 +7,10 @@
 void listadd(node **head, char *i) {
 	//create new node for entry
 	node *n = malloc(sizeof(node));
-	n->val = i;
+	char *s = strdup(i);
+	n->val = s;
 	n->next = NULL;
-	
-	if(*head != NULL){
-		printf("(add) Head: %s New %s\n",(**head).val,n->val);
-	}
-	else{
-		printf("(add) Head: NULL New Head: %s\n",n->val);
-	}
+
 	//if the list is empty make the new node the head
 	if(*head == NULL){
 		*head = n;
@@ -29,6 +24,7 @@ void listadd(node **head, char *i) {
 		runner = runner->next;
 	}
 	runner->next = n;
+	//printf("Prior: %s Added: %s\n",runner->val,runner->next->val);
 }
 
 void listdestroy(node *list) {
@@ -36,6 +32,7 @@ void listdestroy(node *list) {
     while (list != NULL) {
         node *tmp = list;
         list = list->next;
+		free(tmp->val);
         free(tmp);
     }
 }
@@ -44,6 +41,7 @@ void listprint(node *list) {
 	printf("*** List Contents Begin ***\n");
 	// Iterate through list and print all nodes
     while (list != NULL) {
+		//printf("here");
         printf("%s\n", list->val);
         list = list->next;
     }

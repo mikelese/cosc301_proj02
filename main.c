@@ -46,12 +46,12 @@ void free_tokens(char **tokens) {
     free(tokens);
 }
 
-int parseConfig(FILE *input_file, node *PATH) {
+int parseConfig(FILE *input_file, node **PATH) {
 	// Ripped from proj01 main.c
 	// Initialize variables
     size_t size = 0;
     char *line = NULL;
-	PATH = NULL;
+	//PATH = NULL;
 	int path_length = 0;
 
 	//Go through all lines of input
@@ -71,12 +71,12 @@ int parseConfig(FILE *input_file, node *PATH) {
 		}
 		else {
 			path_length++;
-			if(PATH != NULL){
-				printf("%s\n", PATH -> val);
-			}
-			printf("(parse) Line: %s\n", line);
-			listadd(&PATH,line);
-			printf("(parse) Head: %s", PATH->val);
+			//if(PATH != NULL){
+			//	printf("%s\n", PATH -> val);
+			//}
+			//printf("(parse) Line: %s\n", line);
+			listadd(PATH,line);
+			//printf("(parse) Head: %s\n", PATH->val);
 		}		
     }
     return path_length;
@@ -170,7 +170,7 @@ int main(int argc, char **argv) {
    	 	exit(-1);
 	}
 
-	int num_paths = parseConfig(datafile,PATH);
+	int num_paths = parseConfig(datafile,&PATH);
 
 	listprint(PATH);
 
