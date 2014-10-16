@@ -47,22 +47,12 @@ void free_tokens(char **tokens) {
 }
 
 //this function handles each token
-int parseTokenSeq(char *token) {
-
-	int numToks = 0;
-	//count the number of spaces in the line
-    for (int i=0;i<strlen(token);i++) {
-        if(isspace(token[i]) != 0) {
-            numToks++;
-        }
-    }
-
-	char **arguments = tokenify(token," \t\n",numToks);
+int parseTokenSeq(char **arguments) {
 
 	if(strcmp(arguments[0],"exit")==0) {
 		printf("Today was a good day...\n");
 		free_tokens(arguments);
-		exit(0);
+		return -1;
 	}
 
 	if(strcmp(arguments[0],"mode")==0) {
@@ -80,7 +70,7 @@ int parseTokenSeq(char *token) {
 	pid_t pid = fork();
 	
 	if (pid<0) {
-		printf("shell error: %s (%s)\n", strerror(errno),token);
+		printf("shell error: %s (%s)\n", strerror(errno),*arguments);
 		return 0;
 	}
 	
@@ -94,27 +84,16 @@ int parseTokenSeq(char *token) {
 	} 
 	else {
 		wait(NULL);
-		printf("%s\n", "Parent process");
+		//printf("%s\n", "Parent process");
 	}
 	return 0;
 }
 
-int parseTokenPar(char *token, int *pids, int index) {
-
-	int numToks = 0;
-	//count the number of spaces in the line
-    for (int i=0;i<strlen(token);i++) {
-        if(isspace(token[i]) != 0) {
-            numToks++;
-        }
-    }
-
-	char **arguments = tokenify(token," \t\n",numToks);
+int parseTokenPar(char **arguments) {
 
 	if(strcmp(arguments[0],"exit")==0) {
-		printf("Today was a good day...\n");
 		free_tokens(arguments);
-		exit(0);
+		return -1;
 	}
 
 	if(strcmp(arguments[0],"mode")==0) {
@@ -129,10 +108,9 @@ int parseTokenPar(char *token, int *pids, int index) {
 
 	//Fork current process
 	pid_t pid = fork();
-	//pids[index] = pid;
 	
 	if (pid<0) {
-		printf("shell error: %s (%s)\n", strerror(errno),token);
+		printf("shell error: %s (%s)\n", strerror(errno),*arguments);
 		free_tokens(arguments);
 		exit(0);
 	}
@@ -182,37 +160,58 @@ int main(int argc, char **argv) {
         char **tokens = tokenify(line,";",numToks);
         //char *head = *tokens;
         int tempMode = mode;
-		int *pids = malloc(sizeof(int)*numToks);
+		int didexit = 0;
 		for(int i = 0; tokens[i] != NULL; i++){
 			if(tokens[i][0]=='\n') {
 				break;
 			}
+			int numToks = 0;
+			char *token = tokens[i];
+			//count the number of spaces in the line
+		    for (int j=0;j<strlen(token);j++) {
+		        if(isspace(token[j]) != 0) {
+		            numToks++;
+		        }
+		    }
+
+			char **arguments = tokenify(token," \t\n",numToks);
+			
 			if(!mode) {
-				tempMode = parseTokenSeq(tokens[i]);
+				tempMode = parseTokenSeq(arguments);
 			} 
 			else {
-				tempMode = parseTokenPar(tokens[i], pids, i);
+				tempMode = parseTokenPar(arguments);
+			}
+			if(tempMode == -1){
+				didexit = 1;
 			}
         }
 
-        mode = tempMode;
-		
+        
 		if(mode){
 			//printf("REACH PAR MODE, NUM TOKS: %d\n", numToks);
-			int status;
 			for(int i = 0; i <= numToks; i++){
 				//printf("REACH WAIT\n");
-				wait(&status);
+				wait(NULL);
 			}
 		}
 		
 		free_tokens(tokens);
-		if(mode==0) {
+		
+		if(didexit){
+			printf("Today was a good day...\n");
+			free(line);
+			exit(0);
+		}
+		
+		if(!tempMode) {
 			printf("ca$hmoneyballer$ (sequential): ");
 		}
 		else {
 			printf("ca$hmoneyballer$ (paralell): ");
 		}
+		
+		mode = tempMode;
 	}
 	
 	free(line);
