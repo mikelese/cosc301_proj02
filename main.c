@@ -102,6 +102,24 @@ int parseToken(char **arguments, int mode, int tempMode) {
 	return tempMode;
 }
 
+void pauseresume(char **arguments){
+	
+	if(strcmp(arguments[0],"pause")){
+		printf("pause");
+		kill((pid_t)arguments[1], SIGSTOP);
+	}
+	else{
+		printf("resume");
+		kill((pid_t)arguments[1], SIGCONT);
+	}
+	return;
+}
+
+void jobs(char **arguments){
+	
+	return;
+}
+
 int main(int argc, char **argv) {
 
 	size_t size = 0;
@@ -144,8 +162,25 @@ int main(int argc, char **argv) {
 
 			char **arguments = tokenify(token," \t\n",numToks);
 			
-			tempMode = parseToken(arguments,mode,tempMode);
-
+			if(!strcmp(arguments[0],"pause") || !strcmp(arguments[0],"resume")){
+				if(numToks == 2){
+					pauseresume(arguments);
+				}
+				else{
+					printf("shell error: incorrect arguments to %s\n",arguments[0]);
+				}
+			}
+			else if(!strcmp(arguments[0],"jobs")){
+				if(numToks == 1){
+					jobs(arguments);
+				}
+				else{
+					printf("shell error: incorrect arguments to jobs\n");
+				}
+			}
+			else{
+				tempMode = parseToken(arguments,mode,tempMode);
+			}
 			if(tempMode == -1){
 				didexit = 1;
 				tempMode = mode;
