@@ -59,14 +59,16 @@ int parseToken(char **arguments, int mode, int tempMode) {
 		for(i=0;arguments[i]!=NULL;i++) ;
 
 		if(i>1) {
-			if(arguments[1][0]=='p' && tempMode == 0) {
+
+			if(!strncmp(arguments[1],"paralell",strlen(arguments[1])) && tempMode == 0) {
 				free_tokens(arguments);
 				return 1;
 			}
-			if(arguments[1][0]=='s' && tempMode == 1){
+			if(!strncmp(arguments[1],"sequential",strlen(arguments[1])) && tempMode == 1){
 				free_tokens(arguments);
 				return 0;
 			}
+
 		}
 		free_tokens(arguments);
 		return tempMode;
