@@ -73,6 +73,7 @@ int parseToken(char **arguments, int mode, int tempMode) {
 	
 	if (pid<0) {
 		printf("shell error: %s (%s)\n", strerror(errno),*arguments);
+		free_tokens(arguments);
 		return tempMode;
 	}
 	
@@ -82,23 +83,20 @@ int parseToken(char **arguments, int mode, int tempMode) {
 			free_tokens(arguments);
 			exit(0);
 		}
-
-	} 
+	}
+	
 	else {
 		if(mode == 0){
 			wait(NULL);
 		}
 	}
+	
+	free_tokens(arguments);
 	return tempMode;
 }
 
-
 int main(int argc, char **argv) {
 
-    // i'm going to worry about structure later
-	// for now this code just handles input in
-	// a reasonable manner.
-	
 	size_t size = 0;
 	char *line = NULL;
 	int mode = 0;
