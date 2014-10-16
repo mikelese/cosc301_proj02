@@ -9,11 +9,15 @@ void listadd(node **head, char *i) {
 	node *n = malloc(sizeof(node));
 	n->val = i;
 	n->next = NULL;
-
+	
+	if(*head != NULL){
+		printf("(add) Head: %s New %s\n",(**head).val,n->val);
+	}
+	else{
+		printf("(add) Head: NULL New Head: %s\n",n->val);
+	}
 	//if the list is empty make the new node the head
 	if(*head == NULL){
-		printf("%s\n", "no head exists");
-		printf("Adding %s to head\n",i);
 		*head = n;
 		return;
 	}
@@ -24,7 +28,6 @@ void listadd(node **head, char *i) {
 	while(runner->next != NULL) {
 		runner = runner->next;
 	}
-	printf("Adding %s to list after %s\n",i,runner->val);
 	runner->next = n;
 }
 

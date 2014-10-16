@@ -71,9 +71,12 @@ int parseConfig(FILE *input_file, node *PATH) {
 		}
 		else {
 			path_length++;
-			if(PATH != NULL)
+			if(PATH != NULL){
 				printf("%s\n", PATH -> val);
+			}
+			printf("(parse) Line: %s\n", line);
 			listadd(&PATH,line);
+			printf("(parse) Head: %s", PATH->val);
 		}		
     }
     return path_length;
