@@ -67,15 +67,12 @@ int parseTokenSeq(char *token) {
 
 	if(strcmp(arguments[0],"mode")==0) {
 		if(arguments[1][0]=='p') {
-			printf("Entering paralell mode.\n");
 			return 1;
 		}
 		if(arguments[1][0]=='s') {
-			printf("Already in sequential mode.\n");
 			return 0;
 		}
 		else {
-			printf("Not a valid mode.\n");
 			return 0;
 
 		}
@@ -126,17 +123,14 @@ int parseTokenPar(char *token) {
 
 	if(strcmp(arguments[0],"mode")==0) {
 		if(arguments[1][0]=='p') {
-			printf("Already in paralell mode.\n");
 			return 1;
 		}
 		if(arguments[1][0]=='s') {
-			printf("Entering sequential mode.\n");
 			return 0;
 		}
 		else {
-			printf("Not a valid mode.\n");
+			return 1;
 		}
-		wait(NULL);
 		free_tokens(arguments);
 	}	
 
@@ -193,14 +187,20 @@ int main(int argc, char **argv) {
 	
         char **tokens = tokenify(line,";",numToks);
         char *head = *tokens;
+        int tempMode = mode;
 		for(int i = 0; tokens[i] != NULL; i++){
+			if(tokens[i][0]=='\n') {
+				break;
+			}
 			if(mode==0) {
-				mode = parseTokenSeq(tokens[i]);
+				tempMode = parseTokenSeq(tokens[i]);
 			} 
 			else {
-				mode = parseTokenPar(tokens[i]);
+				tempMode = parseTokenPar(tokens[i]);
 			}
         }
+
+        mode = tempMode;
 		
 		free_tokens(tokens);
 		if(mode==0) {
