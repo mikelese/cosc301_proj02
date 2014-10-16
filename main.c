@@ -129,7 +129,7 @@ int parseTokenPar(char *token, int *pids, int index) {
 
 	//Fork current process
 	pid_t pid = fork();
-	pids[index] = pid;
+	//pids[index] = pid;
 	
 	if (pid<0) {
 		printf("shell error: %s (%s)\n", strerror(errno),token);
@@ -146,7 +146,7 @@ int parseTokenPar(char *token, int *pids, int index) {
 
 	} 
 	else {
-		printf("%s\n", "Parent process");
+		//printf("%s\n", "Parent process");
 	}
 
 	return 1;
@@ -198,7 +198,12 @@ int main(int argc, char **argv) {
         mode = tempMode;
 		
 		if(mode){
-			//need waitpid code here
+			//printf("REACH PAR MODE, NUM TOKS: %d\n", numToks);
+			int status;
+			for(int i = 0; i <= numToks; i++){
+				//printf("REACH WAIT\n");
+				wait(&status);
+			}
 		}
 		
 		free_tokens(tokens);
