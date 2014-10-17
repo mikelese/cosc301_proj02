@@ -11,6 +11,7 @@ typedef struct node {
 // the correct location to keep list sorted, a list destroy, and
 // a list print
 void listadd(node **head, char *i);
+int listdelete(const char *name, struct node **head);
 void listdestroy(node *head);
 void listprint(node *head);
 

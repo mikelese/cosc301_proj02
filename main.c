@@ -84,7 +84,7 @@ int parseConfig(FILE *input_file, node **PATH) {
 }
 
 //this function handles each token
-int parseToken(char **arguments, int mode, int tempMode, node *PATH) {
+int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHILDREN) {
 
 	if(strcmp(arguments[0],"exit")==0) {
 		free_tokens(arguments);
@@ -159,7 +159,8 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH) {
 	}
 	
 	else {
-		printf("Child PID: %d\n",(int) pid);
+		printf("Child PID: %d\n",(char) pid);
+		listadd(CHILDREN,(String)pid);
 		if(mode == 0){
 			wait(NULL);
 		}
@@ -194,7 +195,7 @@ void jobs(char **arguments){
 	return;
 }
 
-int input(int mode, node *PATH){
+int input(int mode, node *PATH, node **CHILDREN){
 	
 	size_t size = 0;
 	char *line = NULL;
@@ -252,7 +253,7 @@ int input(int mode, node *PATH){
 				}
 			}
 			else{
-				tempMode = parseToken(arguments,mode,tempMode,PATH);
+				tempMode = parseToken(arguments,mode,tempMode,PATH,CHILDREN);
 			}
 			if(tempMode == -1){
 				didexit = 1;
@@ -288,6 +289,7 @@ int input(int mode, node *PATH){
 
 int main(int argc, char **argv) {
 	node *PATH = NULL;
+	node *CHILDREN = NULL;
 
 	FILE *datafile = NULL;
     datafile = fopen("shell-config", "r");
@@ -344,7 +346,7 @@ int main(int argc, char **argv) {
 	printf("ca$hmoneyballer$ (sequential): ");
 	while(1){
 		if(!mode){
-			mode = input(mode, PATH);
+			mode = input(mode, PATH, &CHILDREN);
 			if(feof(stdin)){
 				printf("\n");
 				break;
@@ -361,6 +363,7 @@ int main(int argc, char **argv) {
 			if (rv == 0) {
 				//printf("timeout1\n"); 
 				pid_t wait_rv = waitpid(-1,NULL,WNOHANG);
+				listdelete(CHILDREN,(String)wait_rv);
 				if(wait_rv != -1 && wait_rv != 0){
 					printf("\nend of: %d\n", (int)wait_rv);
 					printf("ca$hmoneyballer$ (parallel): ");
@@ -369,7 +372,7 @@ int main(int argc, char **argv) {
 			} 
 			else if (rv > 0) {
 				//printf("you typed something on stdin\n");
-				mode = input(mode, PATH);
+				mode = input(mode, PATH, &CHILDREN);
 			}
 			else {
 				printf("there was some kind of error: %s\n", strerror(errno));

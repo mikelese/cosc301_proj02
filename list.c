@@ -28,6 +28,28 @@ void listadd(node **head, char *i) {
 	//printf("Prior: %s Added: %s\n",runner->val,runner->next->val);
 }
 
+int listdelete(const char *name, struct node **head) {
+	struct node *previous = *head;
+	struct node *current = previous->next;
+	
+	if(!strcasecmp(name,previous->val)){
+		free(previous);
+		*head = current;
+		return 1;
+	}
+	
+	while(current != NULL){
+		if(!strcasecmp(name,current->val)){
+			previous->next = current->next;
+			free(current);
+			return 1;
+		}
+		previous = current;
+		current = current->next;
+	}
+	return 0;
+}
+
 void listdestroy(node *list) {
 	// Iterate through list and free all nodes
     while (list != NULL) {
