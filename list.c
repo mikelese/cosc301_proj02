@@ -13,6 +13,9 @@ void listadd(node **head, char *i, char* command) {
 		char *c = strdup(command);
 		n->command = c;
 	}
+	else{
+		n->command = NULL;
+	}
 	n->val = s;
 	n->next = NULL;
 

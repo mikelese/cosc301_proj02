@@ -151,11 +151,11 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 	}
 	
 	else {
-		printf("Child PID: %d\n",(int) pid);
+		//printf("Child PID: %d\n",(int) pid);
 
 		char *str = malloc(6*sizeof(char));
 		snprintf(str, 6, "%d", pid);
-		printf("%s\n", str);
+		//printf("%s\n", str);
 		
 		if(mode) {
 			listadd(CHILDREN,str,arguments[0]);
@@ -195,17 +195,19 @@ void jobs(node **CHILDREN){
 	char* currStatus;
 	char* paused = "Paused";
 	char* running = "Running";
+	int status;
 	while(runner != NULL){
-		int status;
-		waitpid((pid_t)atoi(runner->val), &status, WNOHANG | WUNTRACED);
-		printf("Status: %d\n",WIFSTOPPED(status));
+		status = 0;
+		pid_t temp = (pid_t)atoi(runner->val);
+		waitpid(temp, &status, WNOHANG | WUNTRACED);
+		printf("PID: %d, Status: %d, STOPPED:%d, STOPPER: %d\n",(int)temp, status, WIFSTOPPED(status), WSTOPSIG(status));
 		if(WIFSTOPPED(status)){
 			currStatus = paused;
 		}
 		else{
 			currStatus = running;
 		}
-		printf("PID: %s, Command: %s, Status: %s\n",runner->val,runner->command,currStatus);
+		printf("PID: %d, Command: %s, Status: %s\n",(int)temp,runner->command,currStatus);
 		runner = runner->next;
 	}
 }
