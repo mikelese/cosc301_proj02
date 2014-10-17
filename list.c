@@ -33,6 +33,7 @@ int listdelete(const char *name, struct node **head) {
 	struct node *current = previous->next;
 	
 	if(!strcasecmp(name,previous->val)){
+		free(previous->val);
 		free(previous);
 		*head = current;
 		return 1;
@@ -41,6 +42,7 @@ int listdelete(const char *name, struct node **head) {
 	while(current != NULL){
 		if(!strcasecmp(name,current->val)){
 			previous->next = current->next;
+			free(current->val);
 			free(current);
 			return 1;
 		}
