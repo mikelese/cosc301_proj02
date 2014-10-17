@@ -131,7 +131,7 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 	if(runner==NULL) {
 		struct stat statresult;
 
-		int rv = stat(arguments[0], &statresult);
+		int rv = stat(arg, &statresult);
 		if (rv < 0) {
 			printf("shell error: command '%s' not found in shell-config directories\n", arguments[0]);
 			return tempMode;
