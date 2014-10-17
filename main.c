@@ -46,8 +46,45 @@ void free_tokens(char **tokens) {
     free(tokens);
 }
 
+int parseConfig(FILE *input_file, node **PATH) {
+	// Ripped from proj01 main.c
+	// Initialize variables
+    size_t size = 0;
+    char *line = NULL;
+	//PATH = NULL;
+	int path_length = 0;
+
+	//Go through all lines of input
+    while(getline(&line,&size,input_file) != -1) {
+    	
+    	for(int i=0;i<strlen(line);i++) {
+    		if(line[i]=='\n') {
+    			line[i]='\0';
+    			break;
+    		}
+    	}
+
+    	struct stat statresult;
+		int rv = stat(line, &statresult);
+		if (rv < 0) {
+    		printf("file '%s' is invalid\n", line);	
+		}
+		else {
+			path_length++;
+			//if(PATH != NULL){
+			//	printf("%s\n", PATH -> val);
+			//}
+			//printf("(parse) Line: %s\n", line);
+			listadd(PATH,line);
+			//printf("(parse) Head: %s\n", PATH->val);
+		}		
+    }
+    free(line);
+    return path_length;
+}
+
 //this function handles each token
-int parseToken(char **arguments, int mode, int tempMode) {
+int parseToken(char **arguments, int mode, int tempMode, node *PATH) {
 
 	if(strcmp(arguments[0],"exit")==0) {
 		free_tokens(arguments);
@@ -74,6 +111,30 @@ int parseToken(char **arguments, int mode, int tempMode) {
 		return tempMode;
 
 	}	
+	
+	node *runner = PATH;
+
+	while(runner != NULL) {
+		struct stat statresult;
+		char* concated = malloc((strlen(runner->val)+strlen(arguments[0])+2)*sizeof(char));
+		strcpy(concated,runner->val);
+		concated = strcat(concated,"/");
+		concated = strcat(concated,arguments[0]);
+		printf("%s\n", concated);
+		int rv = stat(concated, &statresult);
+		if (rv >= 0) {
+			arguments[0] = concated;
+			break;
+		}		
+		runner = runner->next;
+		free(concated);
+	}
+
+	if(runner==NULL) {
+		printf("shell error: command '%s' not found in shell-config directories\n", arguments[0]);
+		free_tokens(arguments);
+		return tempMode;
+	}
 
 	//Fork current process
 	pid_t pid = fork();
@@ -220,6 +281,26 @@ int input(int mode){
 }
 
 int main(int argc, char **argv) {
+	node *PATH = NULL;
+
+	FILE *datafile = NULL;
+    datafile = fopen("shell-config", "r");
+	if (datafile == NULL) {
+    	printf("Unable to open file %s: %s\n", "shell-config", strerror(errno));
+   	 	exit(-1);
+	}
+
+	int num_paths = parseConfig(datafile,&PATH);
+
+	listprint(PATH);
+
+	if(!num_paths) {
+		printf("Your shell-config contains no valid files.\n");
+		printf("Please provide one: ");
+		//TODO input
+	}
+
+	fclose(datafile);
 	
 	int mode = 0;
 	printf("ca$hmoneyballer$ (sequential): ");
@@ -263,4 +344,5 @@ int main(int argc, char **argv) {
 
     return 0;
 }
+
 
