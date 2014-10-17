@@ -40,7 +40,6 @@ char** tokenify(const char *s,const char *token, int numToks) {
 void free_tokens(char **tokens) {
 	// free each string
 	for(int i = 0; tokens[i] != NULL; i++){
-		printf("Token: %s, Number: %d\n",tokens[i],i);
         free(tokens[i]);
     }
 	// then free the array
@@ -88,6 +87,7 @@ int parseConfig(FILE *input_file, node **PATH) {
 int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHILDREN) {
 
 	if(strcmp(arguments[0],"exit")==0) {
+		free_tokens(arguments);
 		return -1;
 	}
 
@@ -98,13 +98,16 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 		if(i>1) {
 
 			if(!strncmp(arguments[1],"paralell",strlen(arguments[1])) && tempMode == 0) {
+				free_tokens(arguments);
 				return 1;
 			}
 			if(!strncmp(arguments[1],"sequential",strlen(arguments[1])) && tempMode == 1){
+				free_tokens(arguments);
 				return 0;
 			}
 
 		}
+		free_tokens(arguments);
 		return tempMode;
 
 	}	
@@ -117,7 +120,7 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 		strcpy(concated,runner->val);
 		concated = strcat(concated,"/");
 		concated = strcat(concated,arguments[0]);
-		printf("%s\n", concated);
+		//printf("%s\n", concated);
 		int rv = stat(concated, &statresult);
 		if (rv >= 0) {
 			arguments[0] = concated;
@@ -130,9 +133,10 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 	if(runner==NULL) {
 		struct stat statresult;
 
-		int rv = stat(arg, &statresult);
+		int rv = stat(arguments[0], &statresult);
 		if (rv < 0) {
 			printf("shell error: command '%s' not found in shell-config directories\n", arguments[0]);
+			free_tokens(arguments);
 			return tempMode;
 		}
 	}
@@ -142,6 +146,7 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 	
 	if (pid<0) {
 		printf("shell error: %s (%s)\n", strerror(errno),*arguments);
+		free_tokens(arguments);
 		return tempMode;
 	}
 	
@@ -154,7 +159,7 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 	}
 	
 	else {
-		printf("Child PID: %d\n",(char) pid);
+		printf("Child PID: %d\n",(int) pid);
 
 		char *str = malloc(6*sizeof(char));
 		snprintf(str, 6, "%d", pid);
@@ -170,6 +175,7 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 		}
 	}
 	
+	free_tokens(arguments);
 	return tempMode;
 }
 
@@ -258,8 +264,6 @@ int input(int mode, node *PATH, node **CHILDREN){
 			else{
 				tempMode = parseToken(arguments,mode,tempMode,PATH,CHILDREN);
 			}
-			printf("numToks: %d\n",numToks);
-			free_tokens(arguments);
 			if(tempMode == -1){
 				didexit = 1;
 				tempMode = mode;
@@ -277,8 +281,6 @@ int input(int mode, node *PATH, node **CHILDREN){
 		}
 		if(didexit && mode){
 			if(*CHILDREN == NULL){
-				free(line);
-				listdestroy(PATH);
 				exit(0);
 			}
 			else{
@@ -381,7 +383,7 @@ int main(int argc, char **argv) {
 				if(wait_rv != -1 && wait_rv != 0){
 					char *str = malloc(6*sizeof(char));
 					snprintf(str, 6, "%d", wait_rv);
-					printf("%s\n", str);
+					//printf("%s\n", str);
 					//printf("deleting");
 					if (!listdelete(str,&CHILDREN)) {
 						listdestroy(CHILDREN);
@@ -389,7 +391,7 @@ int main(int argc, char **argv) {
 						return -1;
 					}
 					free(str);
-					printf("\nend of: %d\n", (int)wait_rv);
+					printf("Process: %d has ended.\n", (int)wait_rv);
 					if(tempMode){
 						printf("ca$hmoneyballer$ (parallel): ");
 						fflush(stdout);
@@ -416,5 +418,3 @@ int main(int argc, char **argv) {
 
     return 0;
 }
-
-
