@@ -105,13 +105,20 @@ int parseToken(char **arguments, int mode, int tempMode) {
 
 void pauseresume(char **arguments){
 	
-	if(strcmp(arguments[0],"pause")){
-		printf("pause");
-		kill((pid_t)arguments[1], SIGSTOP);
+	int killstatus;
+	pid_t pid = (pid_t)atoi(arguments[1]);
+	
+	if(!strcmp(arguments[0],"pause")){
+		killstatus = kill(pid, SIGSTOP);
+		if(killstatus) {
+			printf("shell error: %s\n",strerror(errno));
+		}
 	}
 	else{
-		printf("resume");
-		kill((pid_t)arguments[1], SIGCONT);
+		killstatus = kill(pid, SIGCONT);
+		if(killstatus) {
+			printf("shell error: %s\n",strerror(errno));
+		}
 	}
 	return;
 }
@@ -233,10 +240,16 @@ int main(int argc, char **argv) {
 			int rv = poll(&pfd[0], 1, 1000);
 
 			if (rv == 0) {
-				//printf("timeout1\n");   
+				//printf("timeout1\n"); 
+				pid_t wait_rv = waitpid(-1,NULL,WNOHANG);
+				if(wait_rv != -1 && wait_rv != 0){
+					printf("\nend of: %d\n", (int)wait_rv);
+					printf("ca$hmoneyballer$ (parallel): ");
+					fflush(stdout);
+				}  
 			} 
 			else if (rv > 0) {
-				printf("you typed something on stdin\n");
+				//printf("you typed something on stdin\n");
 				mode = input(mode);
 			}
 			else {
