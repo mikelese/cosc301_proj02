@@ -11,7 +11,7 @@
 #include <sys/stat.h>
 #include <poll.h>
 #include <signal.h>
-
+#include "list.h"
 
 char** tokenify(const char *s,const char *token, int numToks) {
 	//duplicate string for parsing
