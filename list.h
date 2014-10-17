@@ -8,9 +8,9 @@ typedef struct node {
 	struct node *next;
 } node;
 
-// Our node class has 3 functions, an add that places an item in
-// the correct location to keep list sorted, a list destroy, and
-// a list print
+// Our node class has 4 functions, an add that places an item in
+// the correct location to keep list sorted, a list destroy, 
+// a list delete, and a list print
 void listadd(node **head, char *i, char *command);
 int listdelete(const char *name, struct node **head);
 void listdestroy(node *head);

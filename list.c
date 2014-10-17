@@ -32,7 +32,7 @@ void listadd(node **head, char *i, char* command) {
 		runner = runner->next;
 	}
 	runner->next = n;
-	//printf("Prior: %s Added: %s\n",runner->val,runner->next->val);
+	//printf("Prior: %s Added: %s\n",runner->val,runner->next->val)
 }
 
 int listdelete(const char *name, struct node **head) {
@@ -82,7 +82,6 @@ void listprint(node *list) {
 	printf("*** List Contents Begin ***\n");
 	// Iterate through list and print all nodes
     while (list != NULL) {
-		//printf("here");
         printf("%s\n", list->val);
         list = list->next;
     }

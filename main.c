@@ -13,6 +13,20 @@
 #include <signal.h>
 #include "list.h"
 
+/*
+ * Jack Sneeringer and Mike Lese
+ *     COSC 301 Project 2
+ *
+ *
+ * Stage 1: Jack poorly copied over old tokenizing code and did mode 
+ * switching. Mike did pretty much everything else.
+ *
+ *
+ * Stage 2: Jack wrote the code for handling background processes, pause, 
+ * resume, and jobs while Mike wrote the PATH code, did error handling, 
+ * and tracked down memory leaks.
+*/
+
 char** tokenify(const char *s,const char *token, int numToks) {
 	//duplicate string for parsing
     char *str = strdup(s);
@@ -71,12 +85,7 @@ int parseConfig(FILE *input_file, node **PATH) {
 		}
 		else {
 			path_length++;
-			//if(PATH != NULL){
-			//	printf("%s\n", PATH -> val);
-			//}
-			//printf("(parse) Line: %s\n", line);
 			listadd(PATH,line,NULL);
-			//printf("(parse) Head: %s\n", PATH->val);
 		}		
     }
     free(line);
@@ -151,11 +160,9 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 	}
 	
 	else {
-		//printf("Child PID: %d\n",(int) pid);
 
 		char *str = malloc(6*sizeof(char));
 		snprintf(str, 6, "%d", pid);
-		//printf("%s\n", str);
 		
 		if(mode) {
 			listadd(CHILDREN,str,arguments[0]);
@@ -235,7 +242,6 @@ int input(int mode, node *PATH, node **CHILDREN){
 	    }
 	
         char **tokens = tokenify(line,";",numToks);
-        //char *head = *tokens;
         int tempMode = mode;
 		int didexit = 0;
 		for(int i = 0; tokens[i] != NULL; i++){
@@ -335,7 +341,6 @@ int main(int argc, char **argv) {
 	
 	int mode = 0;
 	int tempMode = 1;
-	//printf("ca$hmoneyballer$ (sequential): ");
 	while(1){
 		if(!mode){
 			printf("ca$hmoneyballer$ (sequential): ");
@@ -354,13 +359,11 @@ int main(int argc, char **argv) {
 			int rv = poll(&pfd[0], 1, 1000);
 
 			if (rv == 0) {
-				//printf("timeout1\n"); 
 				pid_t wait_rv = waitpid(-1,NULL,WNOHANG);
 				if(wait_rv != -1 && wait_rv != 0){
 					char *str = malloc(6*sizeof(char));
 					snprintf(str, 6, "%d", wait_rv);
-					//printf("%s\n", str);
-					//printf("deleting");
+
 					if (!listdelete(str,&CHILDREN)) {
 						listdestroy(CHILDREN);
 						printf("shell error: pid %s not found. Exiting...",str);
@@ -375,7 +378,6 @@ int main(int argc, char **argv) {
 				}  
 			} 
 			else if (rv > 0 && tempMode) {
-				//printf("you typed something on stdin\n");
 				tempMode = input(mode, PATH, &CHILDREN);
 			}
 			else {
