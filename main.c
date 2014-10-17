@@ -200,7 +200,7 @@ void jobs(node **CHILDREN){
 		status = 0;
 		pid_t temp = (pid_t)atoi(runner->val);
 		waitpid(temp, &status, WNOHANG | WUNTRACED);
-		printf("PID: %d, Status: %d, STOPPED:%d, STOPPER: %d\n",(int)temp, status, WIFSTOPPED(status), WSTOPSIG(status));
+		//printf("PID: %d, Status: %d, STOPPED:%d, STOPPER: %d\n",(int)temp, status, WIFSTOPPED(status), WSTOPSIG(status));
 		if(WIFSTOPPED(status)){
 			currStatus = paused;
 		}
@@ -330,42 +330,6 @@ int main(int argc, char **argv) {
 	if (!num_paths) {
 		printf("No valid shell-config files were provided! You must use full path names!\n");
 	}
-
-	/** This wound up being unnecessary work. **/
-	//listprint(PATH);
-
-	// if(!num_paths) {
-	// 	int isValid = 0;
-	// 	size_t size = 0;
-	// 	char *line = NULL;
-	// 	int mode = 0;
-
-
-
-	// 	printf("Your shell-config contains no valid files.\n");
-	// 	while(!isValid) {
-	// 		printf("Please provide a path: ");
-
-	// 		while(getline(&line,&size,stdin) != -1) {
-	// 			for (int i=0;i<strlen(line);i++) {
-	// 				if(line[i]=='\n') {
-	// 					line[i]='\0';
-	// 				}
-	// 			}
-	// 			struct stat statresult;
-	// 			int rv = stat(line, &statresult);
-	// 			if (rv < 0) {
- 	//    			printf("file '%s' is invalid\n", line);	
-	// 			}
-	// 			else {
-	// 				isValid = 1;
-	// 				listadd(&PATH,line);
-	// 				break;
-	// 			}
-	// 		}
-	// 	}
-	// 	free(line);	
-	// }
 
 	fclose(datafile);
 	
