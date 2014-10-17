@@ -278,6 +278,7 @@ int input(int mode, node *PATH, node **CHILDREN){
 		}
 		if(didexit && mode){
 			if(*CHILDREN == NULL){
+				free(line);
 				exit(0);
 			}
 			else{
