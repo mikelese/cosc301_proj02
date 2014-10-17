@@ -121,14 +121,13 @@ void jobs(char **arguments){
 	return;
 }
 
-int main(int argc, char **argv) {
-
+int input(int mode){
+	
 	size_t size = 0;
 	char *line = NULL;
-	int mode = 0;
+
 	
-	printf("ca$hmoneyballer$ (sequential): ");
-	while(getline(&line,&size,stdin) != -1) {
+	if(getline(&line,&size,stdin) != -1) {
         for (int i=0;i<strlen(line);i++) {
             if (line[i] == '#') {
                 line[i] = '\0';
@@ -189,28 +188,6 @@ int main(int argc, char **argv) {
 			
         }
 		mode = tempMode;
-		printf("mode: %d\n",mode);
-		if(mode){
-			printf("here\n");
-			struct pollfd pfd[1];
-			pfd[0].fd = 0; // stdin is file descriptor 0
-			pfd[0].events = POLLIN;
-			pfd[0].revents = 0;
- 
- 
-			//printf("ca$hmoneyballer$ (paralell): ");
-			int rv = poll(&pfd[0], 1, 1000);
- 
-			if (rv == 0) {
-				printf("timeout\n");    
-			} 
-			else if (rv > 0) {
-				printf("you typed something on stdin\n");
-			}
-			else {
-				printf("there was some kind of error: %s\n", strerror(errno));
-			}
-		}
 		
 		free_tokens(tokens);
 		
@@ -220,13 +197,55 @@ int main(int argc, char **argv) {
 			exit(0);
 		}
 		
-		if(!mode) {
+		if(mode){
+			printf("ca$hmoneyballer$ (parallel): ");
+			fflush(stdout);
+		}
+		else{
 			printf("ca$hmoneyballer$ (sequential): ");
 		}
-	
 	}
 	
 	free(line);
+	
+	return mode;
+	
+}
+
+int main(int argc, char **argv) {
+	
+	int mode = 0;
+	printf("ca$hmoneyballer$ (sequential): ");
+	while(1){
+		if(!mode){
+			mode = input(mode);
+			if(feof(stdin)){
+				printf("\n");
+				break;
+			}
+		}
+		else{
+			struct pollfd pfd[1];
+			pfd[0].fd = 0; // stdin is file descriptor 0
+			pfd[0].events = POLLIN;
+			pfd[0].revents = 0;
+
+			int rv = poll(&pfd[0], 1, 1000);
+
+			if (rv == 0) {
+				//printf("timeout1\n");   
+			} 
+			else if (rv > 0) {
+				printf("you typed something on stdin\n");
+				mode = input(mode);
+			}
+			else {
+				printf("there was some kind of error: %s\n", strerror(errno));
+			}	
+		}
+		
+	
+	}
 
     return 0;
 }
