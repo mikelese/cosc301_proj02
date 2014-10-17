@@ -110,18 +110,17 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 	}	
 	
 	node *runner = PATH;
-	char *arg;
+
 	while(runner != NULL) {
 		struct stat statresult;
 		char* concated = malloc((strlen(runner->val)+strlen(arguments[0])+2)*sizeof(char));
 		strcpy(concated,runner->val);
 		concated = strcat(concated,"/");
 		concated = strcat(concated,arguments[0]);
-		//printf("%s\n", concated);
+		printf("%s\n", concated);
 		int rv = stat(concated, &statresult);
 		if (rv >= 0) {
-			arg = concated;
-			free(concated);
+			arguments[0] = concated;
 			break;
 		}		
 		runner = runner->next;
@@ -147,7 +146,7 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 	}
 	
 	if(pid==0) {
-		if(execv(arg,arguments)<0) {
+		if(execv(arguments[0],arguments)<0) {
 			printf("shell error (execv): %s\n", strerror(errno));
 			free_tokens(arguments);
 			exit(0);
@@ -155,11 +154,11 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 	}
 	
 	else {
-		//printf("Child PID: %d\n",(char) pid);
+		printf("Child PID: %d\n",(char) pid);
 
 		char *str = malloc(6*sizeof(char));
 		snprintf(str, 6, "%d", pid);
-		//printf("%s\n", str);
+		printf("%s\n", str);
 		
 		//printf("adding");
 		if(mode) {
@@ -280,7 +279,6 @@ int input(int mode, node *PATH, node **CHILDREN){
 			if(*CHILDREN == NULL){
 				free(line);
 				listdestroy(PATH);
-				printf("Today was a good day...");
 				exit(0);
 			}
 			else{
@@ -320,6 +318,8 @@ int main(int argc, char **argv) {
 	}
 
 	/** This wound up being unnecessary work. **/
+	//listprint(PATH);
+
 	// if(!num_paths) {
 	// 	int isValid = 0;
 	// 	size_t size = 0;
