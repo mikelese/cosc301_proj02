@@ -116,7 +116,8 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH) {
 
 	while(runner != NULL) {
 		struct stat statresult;
-		concated = strcat(runner->val,"/");
+		concated = strdup(runner->val);
+		concated = strcat(concated,"/");
 		concated = strcat(concated,arguments[0]);
 		printf("%s\n", concated);
 		int rv = stat(concated, &statresult);
