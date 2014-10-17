@@ -241,6 +241,7 @@ int main(int argc, char **argv) {
 			}
 			else {
 				printf("there was some kind of error: %s\n", strerror(errno));
+				return -1;
 			}	
 		}
 		
