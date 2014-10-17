@@ -279,15 +279,20 @@ int input(int mode, node *PATH, node **CHILDREN){
 			listdestroy(PATH);
 			exit(0);
 		}
+		if(didexit && mode){
+			if(*CHILDREN == NULL){
+				exit(0);
+			}
+			else{
+				printf("processes still running, cannot exit\n");
+			}
+		}
 
 		mode = tempMode;
 		
 		if(mode){
 			printf("ca$hmoneyballer$ (parallel): ");
 			fflush(stdout);
-		}
-		else{
-			printf("ca$hmoneyballer$ (sequential): ");
 		}
 	}
 	
@@ -353,9 +358,11 @@ int main(int argc, char **argv) {
 	fclose(datafile);
 	
 	int mode = 0;
-	printf("ca$hmoneyballer$ (sequential): ");
+	int tempMode = 1;
+	//printf("ca$hmoneyballer$ (sequential): ");
 	while(1){
 		if(!mode){
+			printf("ca$hmoneyballer$ (sequential): ");
 			mode = input(mode, PATH, &CHILDREN);
 			if(feof(stdin)){
 				printf("\n");
@@ -385,18 +392,25 @@ int main(int argc, char **argv) {
 					}
 					free(str);
 					printf("\nend of: %d\n", (int)wait_rv);
-					printf("ca$hmoneyballer$ (parallel): ");
-					fflush(stdout);
+					if(tempMode){
+						printf("ca$hmoneyballer$ (parallel): ");
+						fflush(stdout);
+					}
 				}  
 			} 
-			else if (rv > 0) {
+			else if (rv > 0 && tempMode) {
 				//printf("you typed something on stdin\n");
-				mode = input(mode, PATH, &CHILDREN);
+				tempMode = input(mode, PATH, &CHILDREN);
 			}
 			else {
 				printf("there was some kind of error: %s\n", strerror(errno));
 				return -1;
 			}	
+			
+			if(!tempMode && CHILDREN == NULL){
+				mode = 0;
+				tempMode = 1;
+			}
 		}
 		
 	
