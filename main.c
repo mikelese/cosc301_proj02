@@ -79,6 +79,7 @@ int parseConfig(FILE *input_file, node **PATH) {
 			//printf("(parse) Head: %s\n", PATH->val);
 		}		
     }
+    free(line);
     return path_length;
 }
 
@@ -112,11 +113,11 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH) {
 	}
 
 	node *runner = PATH;
-	char *concated = NULL;
 
 	while(runner != NULL) {
 		struct stat statresult;
-		concated = strdup(runner->val);
+		char* concated = malloc((strlen(runner->val)+strlen(arguments[0])+2)*sizeof(char));
+		strcpy(concated,runner->val);
 		concated = strcat(concated,"/");
 		concated = strcat(concated,arguments[0]);
 		printf("%s\n", concated);
@@ -126,6 +127,7 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH) {
 			break;
 		}		
 		runner = runner->next;
+		free(concated);
 	}
 
 	if(runner==NULL) {
@@ -180,6 +182,8 @@ int main(int argc, char **argv) {
 		printf("Please provide one: ");
 		//TODO input
 	}
+
+	fclose(datafile);
 
 	size_t size = 0;
 	char *line = NULL;
@@ -244,6 +248,7 @@ int main(int argc, char **argv) {
 		if(didexit){
 			printf("Today was a good day...\n");
 			free(line);
+			listdestroy(PATH);
 			exit(0);
 		}
 		
