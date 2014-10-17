@@ -268,16 +268,17 @@ int input(int mode, node *PATH, node **CHILDREN){
 			}
 			
         }
-		mode = tempMode;
 		
 		free_tokens(tokens);
 		
-		if(didexit){
+		if(didexit && !mode){
 			printf("Today was a good day...\n");
 			free(line);
 			listdestroy(PATH);
 			exit(0);
 		}
+		
+		mode = tempMode;
 		
 		if(mode){
 			printf("ca$hmoneyballer$ (parallel): ");
