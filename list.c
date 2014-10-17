@@ -5,10 +5,14 @@
 
 /* your list function definitions */
 
-void listadd(node **head, char *i) {
+void listadd(node **head, char *i, char* command) {
 	//create new node for entry
 	node *n = malloc(sizeof(node));
 	char *s = strdup(i);
+	if(command != NULL){
+		char *c = strdup(command);
+		n->command = c;
+	}
 	n->val = s;
 	n->next = NULL;
 
@@ -33,6 +37,9 @@ int listdelete(const char *name, struct node **head) {
 	struct node *current = previous->next;
 	
 	if(!strcasecmp(name,previous->val)){
+		if(previous->command !=NULL){
+			free(previous->command);
+		}
 		free(previous->val);
 		free(previous);
 		*head = current;
@@ -42,6 +49,9 @@ int listdelete(const char *name, struct node **head) {
 	while(current != NULL){
 		if(!strcasecmp(name,current->val)){
 			previous->next = current->next;
+			if(current->command !=NULL){
+				free(current->command);
+			}
 			free(current->val);
 			free(current);
 			return 1;
@@ -57,6 +67,9 @@ void listdestroy(node *list) {
     while (list != NULL) {
         node *tmp = list;
         list = list->next;
+		if(tmp->command !=NULL){
+			free(tmp->command);
+		}
 		free(tmp->val);
         free(tmp);
     }

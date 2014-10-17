@@ -75,7 +75,7 @@ int parseConfig(FILE *input_file, node **PATH) {
 			//	printf("%s\n", PATH -> val);
 			//}
 			//printf("(parse) Line: %s\n", line);
-			listadd(PATH,line);
+			listadd(PATH,line,NULL);
 			//printf("(parse) Head: %s\n", PATH->val);
 		}		
     }
@@ -102,11 +102,9 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 			if(!strncmp(arguments[1],"sequential",strlen(arguments[1])) && tempMode == 1){
 				return 0;
 			}
-
 		}
-		//free_tokens(arguments);
+		
 		return tempMode;
-
 	}	
 	
 	node *runner = PATH;
@@ -117,7 +115,6 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 		strcpy(concated,runner->val);
 		concated = strcat(concated,"/");
 		concated = strcat(concated,arguments[0]);
-		//printf("%s\n", concated);
 		int rv = stat(concated, &statresult);
 		if (rv >= 0) {
 			free(arguments[0]);
@@ -125,7 +122,6 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 			break;
 		}		
 		runner = runner->next;
-		//free(concated);
 	}
 
 	if(runner==NULL) {
@@ -161,9 +157,8 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 		snprintf(str, 6, "%d", pid);
 		printf("%s\n", str);
 		
-		//printf("adding");
 		if(mode) {
-			listadd(CHILDREN,str);
+			listadd(CHILDREN,str,arguments[0]);
 		}
 		free(str);
 		if(mode == 0){
@@ -194,9 +189,25 @@ void pauseresume(char **arguments){
 	return;
 }
 
-void jobs(char **arguments){
+void jobs(node **CHILDREN){
 	
-	return;
+	node *runner = *CHILDREN;
+	char* currStatus;
+	char* paused = "Paused";
+	char* running = "Running";
+	while(runner != NULL){
+		int status;
+		waitpid((pid_t)atoi(runner->val), &status, WNOHANG | WUNTRACED);
+		printf("Status: %d\n",WIFSTOPPED(status));
+		if(WIFSTOPPED(status)){
+			currStatus = paused;
+		}
+		else{
+			currStatus = running;
+		}
+		printf("PID: %s, Command: %s, Status: %s\n",runner->val,runner->command,currStatus);
+		runner = runner->next;
+	}
 }
 
 int input(int mode, node *PATH, node **CHILDREN){
@@ -250,7 +261,7 @@ int input(int mode, node *PATH, node **CHILDREN){
 			}
 			else if(!strcmp(arguments[0],"jobs")){
 				if(numToks == 1){
-					jobs(arguments);
+					jobs(CHILDREN);
 				}
 				else{
 					printf("shell error: incorrect arguments to jobs\n");
@@ -266,7 +277,6 @@ int input(int mode, node *PATH, node **CHILDREN){
 				didexit = 1;
 				tempMode = mode;
 			}
-			
         }
 		
 		free_tokens(tokens);
@@ -343,7 +353,7 @@ int main(int argc, char **argv) {
 	// 			struct stat statresult;
 	// 			int rv = stat(line, &statresult);
 	// 			if (rv < 0) {
- //    				printf("file '%s' is invalid\n", line);	
+ 	//    			printf("file '%s' is invalid\n", line);	
 	// 			}
 	// 			else {
 	// 				isValid = 1;
