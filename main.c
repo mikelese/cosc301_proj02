@@ -104,7 +104,7 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 			}
 
 		}
-		free_tokens(arguments);
+		//free_tokens(arguments);
 		return tempMode;
 
 	}	
@@ -120,11 +120,12 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 		//printf("%s\n", concated);
 		int rv = stat(concated, &statresult);
 		if (rv >= 0) {
+			free(arguments[0]);
 			arguments[0] = concated;
 			break;
 		}		
 		runner = runner->next;
-		free(concated);
+		//free(concated);
 	}
 
 	if(runner==NULL) {
@@ -278,6 +279,7 @@ int input(int mode, node *PATH, node **CHILDREN){
 		}
 		if(didexit && mode){
 			if(*CHILDREN == NULL){
+				listdestroy(PATH);
 				free(line);
 				exit(0);
 			}
