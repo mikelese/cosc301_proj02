@@ -189,7 +189,7 @@ void jobs(char **arguments){
 	return;
 }
 
-int input(int mode){
+int input(int mode, node *PATH){
 	
 	size_t size = 0;
 	char *line = NULL;
@@ -247,7 +247,7 @@ int input(int mode){
 				}
 			}
 			else{
-				tempMode = parseToken(arguments,mode,tempMode);
+				tempMode = parseToken(arguments,mode,tempMode, PATH);
 			}
 			if(tempMode == -1){
 				didexit = 1;
@@ -306,7 +306,7 @@ int main(int argc, char **argv) {
 	printf("ca$hmoneyballer$ (sequential): ");
 	while(1){
 		if(!mode){
-			mode = input(mode);
+			mode = input(mode, PATH);
 			if(feof(stdin)){
 				printf("\n");
 				break;
@@ -331,7 +331,7 @@ int main(int argc, char **argv) {
 			} 
 			else if (rv > 0) {
 				//printf("you typed something on stdin\n");
-				mode = input(mode);
+				mode = input(mode, PATH);
 			}
 			else {
 				printf("there was some kind of error: %s\n", strerror(errno));
