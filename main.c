@@ -87,7 +87,6 @@ int parseConfig(FILE *input_file, node **PATH) {
 int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHILDREN) {
 
 	if(strcmp(arguments[0],"exit")==0) {
-		free_tokens(arguments);
 		return -1;
 	}
 
@@ -98,11 +97,9 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 		if(i>1) {
 
 			if(!strncmp(arguments[1],"paralell",strlen(arguments[1])) && tempMode == 0) {
-				free_tokens(arguments);
 				return 1;
 			}
 			if(!strncmp(arguments[1],"sequential",strlen(arguments[1])) && tempMode == 1){
-				free_tokens(arguments);
 				return 0;
 			}
 
@@ -136,7 +133,6 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 		int rv = stat(arguments[0], &statresult);
 		if (rv < 0) {
 			printf("shell error: command '%s' not found in shell-config directories\n", arguments[0]);
-			free_tokens(arguments);
 			return tempMode;
 		}
 	}
@@ -146,7 +142,6 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 	
 	if (pid<0) {
 		printf("shell error: %s (%s)\n", strerror(errno),*arguments);
-		free_tokens(arguments);
 		return tempMode;
 	}
 	
@@ -175,7 +170,6 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 		}
 	}
 	
-	free_tokens(arguments);
 	return tempMode;
 }
 
@@ -264,6 +258,9 @@ int input(int mode, node *PATH, node **CHILDREN){
 			else{
 				tempMode = parseToken(arguments,mode,tempMode,PATH,CHILDREN);
 			}
+			
+			free_tokens(arguments);
+			
 			if(tempMode == -1){
 				didexit = 1;
 				tempMode = mode;
