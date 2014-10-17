@@ -166,7 +166,9 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 		printf("%s\n", str);
 		
 		//printf("adding");
-		listadd(CHILDREN,str);
+		if(mode) {
+			listadd(CHILDREN,str);
+		}
 		free(str);
 		if(mode == 0){
 			wait(NULL);
@@ -277,7 +279,7 @@ int input(int mode, node *PATH, node **CHILDREN){
 			listdestroy(PATH);
 			exit(0);
 		}
-		
+
 		mode = tempMode;
 		
 		if(mode){
@@ -381,6 +383,7 @@ int main(int argc, char **argv) {
 						printf("shell error: pid %s not found. Exiting...",str);
 						return -1;
 					}
+					free(str);
 					printf("\nend of: %d\n", (int)wait_rv);
 					printf("ca$hmoneyballer$ (parallel): ");
 					fflush(stdout);
