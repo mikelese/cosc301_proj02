@@ -93,6 +93,7 @@ int parseToken(char **arguments, int mode, int tempMode) {
 	}
 	
 	else {
+		printf("Child PID: %d\n",(int) pid);
 		if(mode == 0){
 			wait(NULL);
 		}
@@ -187,13 +188,27 @@ int main(int argc, char **argv) {
 			}
 			
         }
-
-        
+		mode = tempMode;
+		printf("mode: %d\n",mode);
 		if(mode){
-			//printf("REACH PAR MODE, NUM TOKS: %d\n", numToks);
-			for(int i = 0; i <= numToks; i++){
-				//printf("REACH WAIT\n");
-				wait(NULL);
+			printf("here\n");
+			struct pollfd pfd[1];
+			pfd[0].fd = 0; // stdin is file descriptor 0
+			pfd[0].events = POLLIN;
+			pfd[0].revents = 0;
+ 
+ 
+			//printf("ca$hmoneyballer$ (paralell): ");
+			int rv = poll(&pfd[0], 1, 1000);
+ 
+			if (rv == 0) {
+				printf("timeout\n");    
+			} 
+			else if (rv > 0) {
+				printf("you typed something on stdin\n");
+			}
+			else {
+				printf("there was some kind of error: %s\n", strerror(errno));
 			}
 		}
 		
@@ -205,14 +220,10 @@ int main(int argc, char **argv) {
 			exit(0);
 		}
 		
-		if(!tempMode) {
+		if(!mode) {
 			printf("ca$hmoneyballer$ (sequential): ");
 		}
-		else {
-			printf("ca$hmoneyballer$ (paralell): ");
-		}
-		
-		mode = tempMode;
+	
 	}
 	
 	free(line);
