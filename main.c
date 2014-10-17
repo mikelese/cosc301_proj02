@@ -131,9 +131,14 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH) {
 	}
 
 	if(runner==NULL) {
-		printf("shell error: command '%s' not found in shell-config directories\n", arguments[0]);
-		free_tokens(arguments);
-		return tempMode;
+		struct stat statresult;
+
+		int rv = stat(arguments[0], &statresult);
+		if (rv < 0) {
+			printf("shell error: command '%s' not found in shell-config directories\n", arguments[0]);
+			free_tokens(arguments);
+			return tempMode;
+		}
 	}
 
 	//Fork current process
@@ -189,7 +194,7 @@ void jobs(char **arguments){
 	return;
 }
 
-int input(int mode){
+int input(int mode, node *PATH){
 	
 	size_t size = 0;
 	char *line = NULL;
@@ -247,7 +252,7 @@ int input(int mode){
 				}
 			}
 			else{
-				tempMode = parseToken(arguments,mode,tempMode);
+				tempMode = parseToken(arguments,mode,tempMode,PATH);
 			}
 			if(tempMode == -1){
 				didexit = 1;
@@ -262,6 +267,7 @@ int input(int mode){
 		if(didexit){
 			printf("Today was a good day...\n");
 			free(line);
+			listdestroy(PATH);
 			exit(0);
 		}
 		
@@ -292,13 +298,45 @@ int main(int argc, char **argv) {
 
 	int num_paths = parseConfig(datafile,&PATH);
 
-	listprint(PATH);
-
-	if(!num_paths) {
-		printf("Your shell-config contains no valid files.\n");
-		printf("Please provide one: ");
-		//TODO input
+	if (!num_paths) {
+		printf("No valid shell-config files were provided! You must use full path names!\n");
 	}
+
+	/** This wound up being unnecessary work. **/
+	//listprint(PATH);
+
+	// if(!num_paths) {
+	// 	int isValid = 0;
+	// 	size_t size = 0;
+	// 	char *line = NULL;
+	// 	int mode = 0;
+
+
+
+	// 	printf("Your shell-config contains no valid files.\n");
+	// 	while(!isValid) {
+	// 		printf("Please provide a path: ");
+
+	// 		while(getline(&line,&size,stdin) != -1) {
+	// 			for (int i=0;i<strlen(line);i++) {
+	// 				if(line[i]=='\n') {
+	// 					line[i]='\0';
+	// 				}
+	// 			}
+	// 			struct stat statresult;
+	// 			int rv = stat(line, &statresult);
+	// 			if (rv < 0) {
+ //    				printf("file '%s' is invalid\n", line);	
+	// 			}
+	// 			else {
+	// 				isValid = 1;
+	// 				listadd(&PATH,line);
+	// 				break;
+	// 			}
+	// 		}
+	// 	}
+	// 	free(line);	
+	// }
 
 	fclose(datafile);
 	
@@ -306,7 +344,7 @@ int main(int argc, char **argv) {
 	printf("ca$hmoneyballer$ (sequential): ");
 	while(1){
 		if(!mode){
-			mode = input(mode);
+			mode = input(mode, PATH);
 			if(feof(stdin)){
 				printf("\n");
 				break;
@@ -331,7 +369,7 @@ int main(int argc, char **argv) {
 			} 
 			else if (rv > 0) {
 				//printf("you typed something on stdin\n");
-				mode = input(mode);
+				mode = input(mode, PATH);
 			}
 			else {
 				printf("there was some kind of error: %s\n", strerror(errno));
