@@ -373,7 +373,11 @@ int main(int argc, char **argv) {
 				snprintf(str, 5, "%d", wait_rv);
 				printf("%s\n", str);
 
-				listdelete(CHILDREN,str);
+				if(!listdelete(CHILDREN,str)) {
+					listdestroy(CHILDREN);
+					printf("shell error: pid %s not found. Exiting...",str);
+					return -1;
+				}
 				if(wait_rv != -1 && wait_rv != 0){
 					printf("\nend of: %d\n", (int)wait_rv);
 					printf("ca$hmoneyballer$ (parallel): ");
