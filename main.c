@@ -227,6 +227,8 @@ int main(int argc, char **argv) {
 			
 			tempMode = parseToken(arguments,mode,tempMode, PATH);
 
+			//free_tokens(arguments);
+
 			if(tempMode == -1){
 				didexit = 1;
 				tempMode = mode;
