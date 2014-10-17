@@ -110,8 +110,8 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH) {
 		free_tokens(arguments);
 		return tempMode;
 
-	}
-
+	}	
+	
 	node *runner = PATH;
 
 	while(runner != NULL) {
@@ -154,6 +154,7 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH) {
 	}
 	
 	else {
+		printf("Child PID: %d\n",(int) pid);
 		if(mode == 0){
 			wait(NULL);
 		}
@@ -163,34 +164,38 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH) {
 	return tempMode;
 }
 
-int main(int argc, char **argv) {
-	node *PATH = NULL;
-
-	FILE *datafile = NULL;
-    datafile = fopen("shell-config", "r");
-	if (datafile == NULL) {
-    	printf("Unable to open file %s: %s\n", "shell-config", strerror(errno));
-   	 	exit(-1);
+void pauseresume(char **arguments){
+	
+	int killstatus;
+	pid_t pid = (pid_t)atoi(arguments[1]);
+	
+	if(!strcmp(arguments[0],"pause")){
+		killstatus = kill(pid, SIGSTOP);
+		if(killstatus) {
+			printf("shell error: %s\n",strerror(errno));
+		}
 	}
-
-	int num_paths = parseConfig(datafile,&PATH);
-
-	listprint(PATH);
-
-	if(!num_paths) {
-		printf("Your shell-config contains no valid files.\n");
-		printf("Please provide one: ");
-		//TODO input
+	else{
+		killstatus = kill(pid, SIGCONT);
+		if(killstatus) {
+			printf("shell error: %s\n",strerror(errno));
+		}
 	}
+	return;
+}
 
-	fclose(datafile);
+void jobs(char **arguments){
+	
+	return;
+}
 
+int input(int mode){
+	
 	size_t size = 0;
 	char *line = NULL;
-	int mode = 0;
+
 	
-	printf("ca$hmoneyballer$ (sequential): ");
-	while(getline(&line,&size,stdin) != -1) {
+	if(getline(&line,&size,stdin) != -1) {
         for (int i=0;i<strlen(line);i++) {
             if (line[i] == '#') {
                 line[i] = '\0';
@@ -225,49 +230,119 @@ int main(int argc, char **argv) {
 
 			char **arguments = tokenify(token," \t\n",numToks);
 			
-			tempMode = parseToken(arguments,mode,tempMode, PATH);
-
-			//free_tokens(arguments);
-
+			if(!strcmp(arguments[0],"pause") || !strcmp(arguments[0],"resume")){
+				if(numToks == 2){
+					pauseresume(arguments);
+				}
+				else{
+					printf("shell error: incorrect arguments to %s\n",arguments[0]);
+				}
+			}
+			else if(!strcmp(arguments[0],"jobs")){
+				if(numToks == 1){
+					jobs(arguments);
+				}
+				else{
+					printf("shell error: incorrect arguments to jobs\n");
+				}
+			}
+			else{
+				tempMode = parseToken(arguments,mode,tempMode);
+			}
 			if(tempMode == -1){
 				didexit = 1;
 				tempMode = mode;
 			}
 			
         }
-
-        
-		if(mode){
-			//printf("REACH PAR MODE, NUM TOKS: %d\n", numToks);
-			for(int i = 0; i <= numToks; i++){
-				//printf("REACH WAIT\n");
-				wait(NULL);
-			}
-		}
+		mode = tempMode;
 		
 		free_tokens(tokens);
 		
 		if(didexit){
 			printf("Today was a good day...\n");
 			free(line);
-			listdestroy(PATH);
 			exit(0);
 		}
 		
-		if(!tempMode) {
+		if(mode){
+			printf("ca$hmoneyballer$ (parallel): ");
+			fflush(stdout);
+		}
+		else{
 			printf("ca$hmoneyballer$ (sequential): ");
 		}
-		else {
-			printf("ca$hmoneyballer$ (paralell): ");
-		}
-		
-		mode = tempMode;
 	}
 	
 	free(line);
+	
+	return mode;
+	
+}
 
-	listdestroy(PATH);
+int main(int argc, char **argv) {
+	node *PATH = NULL;
+
+	FILE *datafile = NULL;
+    datafile = fopen("shell-config", "r");
+	if (datafile == NULL) {
+    	printf("Unable to open file %s: %s\n", "shell-config", strerror(errno));
+   	 	exit(-1);
+	}
+
+	int num_paths = parseConfig(datafile,&PATH);
+
+	listprint(PATH);
+
+	if(!num_paths) {
+		printf("Your shell-config contains no valid files.\n");
+		printf("Please provide one: ");
+		//TODO input
+	}
+
+	fclose(datafile);
+	
+	int mode = 0;
+	printf("ca$hmoneyballer$ (sequential): ");
+	while(1){
+		if(!mode){
+			mode = input(mode);
+			if(feof(stdin)){
+				printf("\n");
+				break;
+			}
+		}
+		else{
+			struct pollfd pfd[1];
+			pfd[0].fd = 0; // stdin is file descriptor 0
+			pfd[0].events = POLLIN;
+			pfd[0].revents = 0;
+
+			int rv = poll(&pfd[0], 1, 1000);
+
+			if (rv == 0) {
+				//printf("timeout1\n"); 
+				pid_t wait_rv = waitpid(-1,NULL,WNOHANG);
+				if(wait_rv != -1 && wait_rv != 0){
+					printf("\nend of: %d\n", (int)wait_rv);
+					printf("ca$hmoneyballer$ (parallel): ");
+					fflush(stdout);
+				}  
+			} 
+			else if (rv > 0) {
+				//printf("you typed something on stdin\n");
+				mode = input(mode);
+			}
+			else {
+				printf("there was some kind of error: %s\n", strerror(errno));
+				return -1;
+			}	
+		}
+		
+	
+	}
 
     return 0;
 }
+
 
