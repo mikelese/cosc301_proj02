@@ -160,7 +160,13 @@ int parseToken(char **arguments, int mode, int tempMode, node *PATH, node **CHIL
 	
 	else {
 		printf("Child PID: %d\n",(char) pid);
-		listadd(CHILDREN,(String)pid);
+
+		char *str = malloc(5*sizeof(char));
+		snprintf(str, 5, "%d", pid);
+		printf("%s\n", str);
+
+		listadd(CHILDREN,str);
+		free(str);
 		if(mode == 0){
 			wait(NULL);
 		}
@@ -363,7 +369,11 @@ int main(int argc, char **argv) {
 			if (rv == 0) {
 				//printf("timeout1\n"); 
 				pid_t wait_rv = waitpid(-1,NULL,WNOHANG);
-				listdelete(CHILDREN,(String)wait_rv);
+				char *str = malloc(5*sizeof(char));
+				snprintf(str, 5, "%d", wait_rv);
+				printf("%s\n", str);
+
+				listdelete(CHILDREN,str);
 				if(wait_rv != -1 && wait_rv != 0){
 					printf("\nend of: %d\n", (int)wait_rv);
 					printf("ca$hmoneyballer$ (parallel): ");
